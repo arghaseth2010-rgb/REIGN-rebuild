@@ -1,0 +1,26 @@
+name: R.E.I.G.N. quest reminders
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # every 5 minutes — GitHub's own minimum practical granularity
+  workflow_dispatch: {}       # lets you trigger a run manually from the Actions tab, for testing
+
+jobs:
+  check-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Check reminders and send pushes
+        working-directory: scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: node check-reminders.js
