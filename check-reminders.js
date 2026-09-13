@@ -35,15 +35,21 @@ if (!rawSecret) {
 // signature is wrong and Google just rejects it with no specifics.
 function loadServiceAccount(secret) {
   const trimmed = secret.trim();
-  if (trimmed.startsWith('{')) {
-    try { return JSON.parse(trimmed); }
-    catch (err) { throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY looks like JSON but failed to parse: ' + err.message); }
+
+  // Try base64 first (preferred)
+  try {
+    const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
+    if (decoded.trim().startsWith('{')) {
+      return JSON.parse(decoded);
+    }
+  } catch (err) { }
+
+  // Fall back to raw JSON
+  try {
+    return JSON.parse(trimmed);
+  } catch (err) {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is neither valid base64 nor valid JSON: ' + err.message);
   }
-  let decoded;
-  try { decoded = Buffer.from(trimmed, 'base64').toString('utf8'); }
-  catch (err) { throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is neither valid JSON nor valid base64.'); }
-  try { return JSON.parse(decoded); }
-  catch (err) { throw new Error('Decoded FIREBASE_SERVICE_ACCOUNT_KEY (base64) is not valid JSON: ' + err.message); }
 }
 
 const serviceAccount = loadServiceAccount(rawSecret);
@@ -97,7 +103,7 @@ async function main() {
     const nowHm = timeInZone(now, tz);
     const dateKey = dateKeyInZone(now, tz);
     console.log(`[${uid}] timezone=${tz} nowHm=${nowHm} dateKey=${dateKey}`);
-    console.log(`[${uid}] challenges=${(state.challenges||[]).length} tasks=${(state.tasks||[]).length}`);
+    console.log(`[${uid}] challenges=${(state.challenges || []).length} tasks=${(state.tasks || []).length}`);
 
     const logRef = appRef.doc('reminderLog');
     const logSnap = await logRef.get();
@@ -145,9 +151,9 @@ async function main() {
           resp.responses.forEach((r, i) => {
             const code = r.error && r.error.code;
             if (!r.success && (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token')) {
-              db.collection('users').doc(uid).collection('fcmTokens').doc(tokens[i]).delete().catch(() => {});
+              db.collection('users').doc(uid).collection('fcmTokens').doc(tokens[i]).delete().catch(() => { });
             }
-            console.log(`  → token[${i}] success=${r.success} error=${code||'none'}`);
+            console.log(`  → token[${i}] success=${r.success} error=${code || 'none'}`);
           });
           console.log(`Sent "${item.title}" to ${tokens.length} device(s) for user ${uid}`);
         } catch (err) {
