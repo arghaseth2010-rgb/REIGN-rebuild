@@ -35,20 +35,10 @@ if (!rawSecret) {
 // signature is wrong and Google just rejects it with no specifics.
 function loadServiceAccount(secret) {
   const trimmed = secret.trim();
-
-  // Try base64 first (preferred)
-  try {
-    const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
-    if (decoded.trim().startsWith('{')) {
-      return JSON.parse(decoded);
-    }
-  } catch (err) { }
-
-  // Fall back to raw JSON
   try {
     return JSON.parse(trimmed);
   } catch (err) {
-    throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is neither valid base64 nor valid JSON: ' + err.message);
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is not valid JSON: ' + err.message);
   }
 }
 
@@ -86,6 +76,12 @@ function inWindow(reminderHm, nowHm) {
 }
 
 async function main() {
+
+  console.log('Project ID:', serviceAccount.project_id);
+  console.log('Client email:', serviceAccount.client_email);
+  
+  
+
   const now = new Date();
   const usersSnap = await db.collection('users').get();
   console.log(`Checking reminders for ${usersSnap.size} user(s) at ${now.toISOString()}`);
