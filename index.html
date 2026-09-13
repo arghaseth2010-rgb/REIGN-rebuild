@@ -1390,7 +1390,7 @@
   measurementId: "G-LRG8NWGHXQ"
   };
   // Web Push certificate key, from Project settings > Cloud Messaging > Web Push certificates.
-  const FCM_VAPID_KEY = "BC6YHbXXBPgzlLkZBVsT9z5fo66yFopzYGQ5G1ByOCkWDvAcNFzfQvUTBEak5V8lJtKWQvl3ZPVFPzaykF89c0I";
+  const FCM__KEY = "BC6YHbXXBPgzlLkZBVsT9z5fo66yFopzYGQ5G1ByOCkWDvAcNFzfQvUTBEak5V8lJtKWQvl3ZPVFPzaykF89c0I";
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
@@ -1866,7 +1866,7 @@
   async function registerFcmToken(){
     if(!currentUser || !messaging) return;
     try{
-      const token = await messaging.getToken({ vapidKey: FCM_VAPID_KEY });
+      const token = await messaging.getToken({ vapidKey: BC6YHbXXBPgzlLkZBVsT9z5fo66yFopzYGQ5G1ByOCkWDvAcNFzfQvUTBEak5V8lJtKWQvl3ZPVFPzaykF89c0I });
       if(!token) return;
       await db.collection('users').doc(currentUser.uid).collection('fcmTokens').doc(token).set({
         platform: navigator.userAgent, updatedAt: Date.now(),
