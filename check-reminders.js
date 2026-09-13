@@ -16,15 +16,7 @@
 // account keys are free on the Spark plan; they're just IAM
 // credentials, unrelated to Cloud Functions billing.
 
-const admin = require('firebase-admin');
 
-const WINDOW_MINUTES = 6; // slightly wider than the 5-min cron interval to absorb scheduling jitter
-
-const rawSecret = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-if (!rawSecret) {
-  console.error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.');
-  process.exit(1);
-}
 
 // Accepts either the raw service-account JSON or a base64-encoded copy of it.
 // Base64 is strongly preferred: pasting raw JSON into a GitHub secret is a
@@ -42,8 +34,15 @@ function loadServiceAccount(secret) {
   }
 }
 
-const serviceAccount = loadServiceAccount(rawSecret);
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+const admin = require('firebase-admin');
+
+const WINDOW_MINUTES = 6;
+
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+  projectId: 'reign-self-improvement'
+});
+
 const db = admin.firestore();
 const messaging = admin.messaging();
 
