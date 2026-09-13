@@ -1863,16 +1863,20 @@
 
   // ---- Notification (FCM) token registration — one token per
   // device, so a single account can push to Windows + Android alike.
-  async function registerFcmToken(){
-    if(!currentUser || !messaging) return;
-    try{
-      const token = await messaging.getToken({ vapidKey: BC6YHbXXBPgzlLkZBVsT9z5fo66yFopzYGQ5G1ByOCkWDvAcNFzfQvUTBEak5V8lJtKWQvl3ZPVFPzaykF89c0I });
-      if(!token) return;
-      await db.collection('users').doc(currentUser.uid).collection('fcmTokens').doc(token).set({
-        platform: navigator.userAgent, updatedAt: Date.now(),
-      });
-    }catch(err){ console.error('R.E.I.G.N.: FCM token registration failed', err); }
-  }
+ async function registerFcmToken(){
+  if(!currentUser || !messaging) return;
+  try{
+    const registration = await navigator.serviceWorker.register('/sw.js'); // ← add this
+    const token = await messaging.getToken({ 
+      vapidKey: 'BC6YHbXXBPgzlLkZBVsT9z5fo66yFopzYGQ5G1ByOCkWDvAcNFzfQvUTBEak5V8lJtKWQvl3ZPVFPzaykF89c0I',
+      serviceWorkerRegistration: registration // ← add this
+    });
+    if(!token) return;
+    await db.collection('users').doc(currentUser.uid).collection('fcmTokens').doc(token).set({
+      platform: navigator.userAgent, updatedAt: Date.now(),
+    });
+  }catch(err){ console.error('R.E.I.G.N.: FCM token registration failed', err); }
+}
 
   if(messaging){
     // Foreground messages don't auto-show a system notification —
