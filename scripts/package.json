@@ -1,0 +1,9 @@
+{
+  "name": "reign-reminder-checker",
+  "private": true,
+  "main": "check-reminders.js",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
